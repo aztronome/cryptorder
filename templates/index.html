@@ -8,7 +8,8 @@
 </head>
 <body>
     <div class="container">
-        <h1>Crypto Trading App</h1>
+        <h1>Cryptorder</h1>
+        <h2>Helps you choose buy and sell limit orders that either reduce your average cost or make a faster entry. Tap Get BTC to grab the current price of BTC.</h2>
         
         <div class="button-row">
             <button class="get-button" onclick="fetchPrice('BTC')">Get BTC</button>
@@ -34,12 +35,12 @@
             </div>
 
             <div class="form-group">
-                <label for="bottom_price">Expected bottom Price:</label>
+                <label for="bottom_price">Expected bottom Price, you think it could dip this low:</label>
                 <input type="number" id="bottom_price" name="bottom_price" value="{{ request.form.get('bottom_price', '') }}" required>
             </div>
 
             <div class="form-group">
-                <label for="scaling_factor">Scaling Factor 1=linear - 9=highly exponential:</label>
+                <label for="scaling_factor">Slope 1=Nearly equal orders for faster entry - 9=Buy more at the bottom for low average cost:</label>
                 <input type="number" id="scaling_factor" name="scaling_factor" min="1" max="9" value="{{ request.form.get('scaling_factor', '') }}" required>
             </div>
             
