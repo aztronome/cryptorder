@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Crypto Trading App</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Crypto Trading App</h1>
+        
+        <div class="button-row">
+            <button class="get-button" onclick="fetchPrice('BTC')">Get BTC</button>
+            <button class="get-button" onclick="fetchPrice('ETH')">Get ETH</button>
+            <button class="get-button" onclick="fetchPrice('SOL')">Get SOL</button>
+            <button class="get-button" onclick="fetchPrice('SUI')">Get SUI</button>
+        </div>
+        
+        <form method="POST" action="/submit">
+            <div class="form-group">
+                <label for="price">Current price:</label>
+                <input type="text" id="price" name="price" value="{{ request.form.get('price', '') }}" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="investment">Investment Amount:</label>
+                <input type="number" id="investment" name="investment" value="{{ request.form.get('investment', '') }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="percent">Start buying at X percent Below current price:</label>
+                <input type="number" id="percent" name="percent" value="{{ request.form.get('percent', '') }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="bottom_price">Expected bottom Price:</label>
+                <input type="number" id="bottom_price" name="bottom_price" value="{{ request.form.get('bottom_price', '') }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="scaling_factor">Scaling Factor 1=linear - 9=highly exponential:</label>
+                <input type="number" id="scaling_factor" name="scaling_factor" min="1" max="9" value="{{ request.form.get('scaling_factor', '') }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="num_orders">Number of Orders:</label>
+                <input type="number" id="num_orders" name="num_orders" value="{{ request.form.get('num_orders', '') }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="order_type">Order Type:</label>
+                <select id="order_type" name="order_type">
+                    <option value="buy">Buy</option>
+                    <option value="sell">Sell</option>
+                </select>
+            </div>
+            
+            <button id="submit_button" onclick="submitForm()">Submit</button>
+            
+            {% if orders %}
+            <h2>Generated Orders</h2>
+            <table>
+                <tr>
+                    <th>Price (USD)</th>
+                    <th>Amount (USD)</th>
+                    <th>BTC Quantity</th>
+                </tr>
+                {% for order in orders %}
+                <tr>
+                    <td>{{ order.price }}</td>
+                    <td>{{ order.amount_usd }}</td>
+                    <td>{{ order.amount_btc }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            
+            <div class="average-cost">
+                <p>  Average {{ coin }} Cost: {{ avg_cost }} |--------------------------------------------------------------------------|  Total {{ coin }} Purchased: {{ total_btc }}</p>
+            </div>
+            {% endif %}
+
+    <script>
+        function fetchPrice(coin) {
+            fetch(`/get_price/${coin}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error fetching price for ${coin}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.price) {
+                        document.getElementById('price').value = data.price;
+                    }
+                })
+                .catch(error => {
+                    alert(error.message);
+                });
+        }
+    </script>
+</body>
+</html>
