@@ -1,3 +1,5 @@
+// 17JAN2025 fixed more typos and tweaked the prompts and description before another push to
+// https://github.com/aztronome/cryptorder.git
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,7 +11,7 @@
 <body>
     <div class="container">
         <h1>Cryptorder</h1>
-        <p>Helps you choose buy and sell limit orders that either reduce your average cost or make a faster entry. Tap Get BTC to grab the current price of BTC.</p>
+        <p>Helps to choose buy or sell limit orders that either reduce your average cost or make a faster entry. Tap Get BTC to grab the current price of BTC.</p>
         
         <div class="button-row">
             <button class="get-button" onclick="fetchPrice('BTC')">Get BTC</button>
@@ -20,32 +22,32 @@
         
         <form method="POST" action="/submit">
             <div class="form-group">
-                <label for="price">Current price:</label>
+                <label for="price">Current price: Tap a coin to grab it's current price:</label>
                 <input type="text" id="price" name="price" value="{{ request.form.get('price', '') }}" readonly>
             </div>
             
             <div class="form-group">
-                <label for="investment">Investment Amount:</label>
+                <label for="investment">Investment Amount: In dollars:</label>
                 <input type="number" id="investment" name="investment" value="{{ request.form.get('investment', '') }}" required>
             </div>
             
             <div class="form-group">
-                <label for="percent">Start buying at X percent Below current price:</label>
+                <label for="percent">Start buying at X percent Below current price: Whole numbers:</label>
                 <input type="number" id="percent" name="percent" value="{{ request.form.get('percent', '') }}" required>
             </div>
 
             <div class="form-group">
-                <label for="bottom_price">Expected bottom Price, you think it could dip this low:</label>
+                <label for="bottom_price">Expected bottom Price: You think it could dip this low:</label>
                 <input type="number" id="bottom_price" name="bottom_price" value="{{ request.form.get('bottom_price', '') }}" required>
             </div>
 
             <div class="form-group">
-                <label for="scaling_factor">Scaling Factor 1 = Nearly equal orders for faster entry - 9 = Buy more at the bottom for low average cost:</label>
+                <label for="scaling_factor">Scaling Factor: 1 = Nearly equal orders for faster entry - 9 = Buy more at the bottom for lower average cost:</label>
                 <input type="number" id="scaling_factor" name="scaling_factor" min="1" max="9" value="{{ request.form.get('scaling_factor', '') }}" required>
             </div>
             
             <div class="form-group">
-                <label for="num_orders">Number of Orders:</label>
+                <label for="num_orders">Number of Orders: Should be atleast 2, try 6:</label>
                 <input type="number" id="num_orders" name="num_orders" value="{{ request.form.get('num_orders', '') }}" required>
             </div>
             
