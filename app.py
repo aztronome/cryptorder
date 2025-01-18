@@ -67,9 +67,9 @@ def submit():
         total_quantity = 0
 
         for i in range(num_orders):
-            order_price = round((bottom_price + (i * order_width)), 2)
+            order_price = int((bottom_price + (i * order_width)))
             order_amount = round(normalized_weights[i] * investment, 2)  # Proportional to the weight
-            order_quantity = round(order_amount / order_price, 8)
+            order_quantity = round(order_amount / order_price, 6)
 
             total_investment += order_amount
             total_quantity += order_quantity
@@ -87,8 +87,7 @@ def submit():
             'index.html',
             orders=orders,
             avg_cost=round(avg_cost, 2),
-            total_investment=round(total_investment, 2),
-            total_btc=round(total_quantity, 8)
+            total_btc=round(total_quantity, 7)
         )
 
     except Exception as e:

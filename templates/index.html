@@ -9,7 +9,7 @@
 <body>
     <div class="container">
         <h1>Cryptorder</h1>
-        <p>Helps to choose buy or sell limit orders that either reduce your average cost or make a faster entry. Tap Get BTC to grab the current price of BTC.</p>
+        <p>Generates buy or sell limit orders that either expedite entry or reduce average cost. Tap Get BTC to grab the current price of Bitcoin.</p>
         
         <div class="button-row">
             <button class="get-button" onclick="fetchPrice('BTC')">Get BTC</button>
@@ -20,8 +20,8 @@
         
         <form method="POST" action="/submit">
             <div class="form-group">
-                <label for="price">Current price: Tap a coin to grab it's current price</label>
-                <input type="text" id="price" name="price" value="{{ request.form.get('price', '') }}" readonly>
+                <label for="price">Tap a coin to GET it's current price or eneter a custom price</label>
+                <input type="text" id="price" name="price" value="{{ request.form.get('price', '') }}">
             </div>
             
             <div class="form-group">
