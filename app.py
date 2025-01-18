@@ -1,4 +1,4 @@
-# 14JAN2025 - https://github.com/aztronome/cryptorder.git
+# 17JAN2025 - changed the rounding behavior of the output
 # This code mostly works and does what I want including persistance of the values
 # A consistent average price regardless of investment amount or number
 # of orders - I am making this save before adding the coin symbol to the submit
@@ -42,9 +42,14 @@ def submit():
         current_price = float(request.form['price'])
         investment = float(request.form['investment'])
         percent = float(request.form['percent'])
+        # choose start buying at percent below current or an exact price
+        #start type
         bottom_price = float(request.form['bottom_price'])
         scaling_factor = float(request.form['scaling_factor'])
         num_orders = int(request.form['num_orders'])
+        # bottom_type - you can set a bottom price or a percent below the current price which must
+        # be below the start buying at price
+        # Order Type for Sell
 
         # Calculate the first order price, price range, and order width
         first_order_price = current_price * (1 - (percent / 100))

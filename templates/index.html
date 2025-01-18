@@ -1,3 +1,4 @@
+<!-- 17JAN2025 condensed the text, centered the button and output text and editable price -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,41 +21,41 @@
         
         <form method="POST" action="/submit">
             <div class="form-group">
-                <label for="price">Tap a coin to GET it's current price or eneter a custom price</label>
+                <label for="price">Tap a coin to GET it's current price or enter a custom price</label>
                 <input type="text" id="price" name="price" value="{{ request.form.get('price', '') }}">
             </div>
-            
-            <div class="form-group">
-                <label for="investment">Investment Amount: In dollars</label>
-                <input type="number" id="investment" name="investment" value="{{ request.form.get('investment', '') }}" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="percent">Start buying at X percent Below current price: Whole numbers</label>
-                <input type="number" id="percent" name="percent" value="{{ request.form.get('percent', '') }}" required>
-            </div>
 
-            <div class="form-group">
-                <label for="bottom_price">Expected bottom Price: You think it could dip this low</label>
-                <input type="number" id="bottom_price" name="bottom_price" value="{{ request.form.get('bottom_price', '') }}" required>
-            </div>
-
-            <div class="form-group">
-                <label for="scaling_factor">Scaling Factor: 1 = Nearly equal orders for faster entry - 9 = Buy more toward the bottom for lower average cost</label>
-                <input type="number" id="scaling_factor" name="scaling_factor" min="1" max="9" value="{{ request.form.get('scaling_factor', '') }}" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="num_orders">Number of Orders: More is better, try 6</label>
-                <input type="number" id="num_orders" name="num_orders" value="{{ request.form.get('num_orders', '') }}" required>
-            </div>
-            
             <div class="form-group">
                 <label for="order_type">Order Type:</label>
                 <select id="order_type" name="order_type">
                     <option value="buy">Buy</option>
                     <option value="sell">Sell</option>
                 </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="investment">Amount to buy or sell: In dollars</label>
+                <input type="number" id="investment" name="investment" value="{{ request.form.get('investment', '') }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="percent">Start trading at this % below current price: Whole numbers</label>
+                <input type="number" id="percent" name="percent" value="{{ request.form.get('percent', '') }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="bottom_price">Expected top or bottom Price that you think it could reach</label>
+                <input type="number" id="bottom_price" name="bottom_price" value="{{ request.form.get('bottom_price', '') }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="scaling_factor">Scaling Factor (1 to 9): 1 = Nearly equal orders for faster entry: 9 = Buy more toward the bottom for lower average cost</label>
+                <input type="number" id="scaling_factor" name="scaling_factor" min="1" max="9" value="{{ request.form.get('scaling_factor', '') }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="num_orders">Number of Orders: More is better, try atleast 6</label>
+                <input type="number" id="num_orders" name="num_orders" value="{{ request.form.get('num_orders', '') }}" required>
             </div>
             
             <button id="submit_button" onclick="submitForm()">Submit</button>
