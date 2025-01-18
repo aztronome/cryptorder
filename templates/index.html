@@ -40,12 +40,12 @@
             </div>
 
             <div class="form-group">
-                <label for="scaling_factor">Scaling Factor: 1 = Nearly equal orders for faster entry - 9 = Buy more at the bottom for lower average cost</label>
+                <label for="scaling_factor">Scaling Factor: 1 = Nearly equal orders for faster entry - 9 = Buy more toward the bottom for lower average cost</label>
                 <input type="number" id="scaling_factor" name="scaling_factor" min="1" max="9" value="{{ request.form.get('scaling_factor', '') }}" required>
             </div>
             
             <div class="form-group">
-                <label for="num_orders">Number of Orders: Should be atleast 2, try 6</label>
+                <label for="num_orders">Number of Orders: More is better, try 6</label>
                 <input type="number" id="num_orders" name="num_orders" value="{{ request.form.get('num_orders', '') }}" required>
             </div>
             
