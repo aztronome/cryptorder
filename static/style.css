@@ -26,6 +26,11 @@ p {
     text-align: center;
 }
 
+button {
+    display: block;
+    margin: 0 auto;
+}
+
 .button-row {
     display: flex;
     justify-content: space-around;
