@@ -35,6 +35,10 @@ def get_price(coin):
         print(f"Error fetching price for {coin}: {e}")  # Log the error
         return jsonify({"error": str(e)}), 500
 
+@app.route('/help')
+def help():
+    return render_template('help.html')
+
 @app.route('/submit', methods=['POST'])
 def submit():
     try:
