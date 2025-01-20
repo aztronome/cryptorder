@@ -76,7 +76,7 @@ def submit():
         total_quantity = 0
 
         for i in range(num_orders):
-            order_price = int((bottom_price + (i * order_width)))
+            order_price = round((bottom_price + (i * order_width)).2)
             order_amount = round(normalized_weights[i] * investment, 2)  # Proportional to the weight
             order_quantity = round(order_amount / order_price, 6)
 
@@ -102,5 +102,5 @@ def submit():
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
