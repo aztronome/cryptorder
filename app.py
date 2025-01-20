@@ -76,7 +76,7 @@ def submit():
         total_quantity = 0
 
         for i in range(num_orders):
-            order_price = round((bottom_price + (i * order_width)).2)
+            order_price = round((bottom_price + (i * order_width)), 2)
             order_amount = round(normalized_weights[i] * investment, 2)  # Proportional to the weight
             order_quantity = round(order_amount / order_price, 6)
 
