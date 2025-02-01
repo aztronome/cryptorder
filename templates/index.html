@@ -62,10 +62,25 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            justify-content: center; /* Center the items horizontally */
         }
 
+        /* Shrink the input fields */
         .inline-input input[type="number"] {
-            width: 150px; /* Adjust the width as needed */
+            width: 80px; /* Adjust the width as needed */
+            text-align: center; /* Center the text inside the input */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .inline-input {
+                flex-direction: column; /* Stack items vertically on small screens */
+                align-items: flex-start; /* Align items to the left */
+            }
+
+            .inline-input input[type="number"] {
+                width: 100%; /* Full width on small screens */
+            }
         }
     </style>
 </head>
@@ -89,7 +104,7 @@
 
             <div class="form-group">
                 <label for="order_type">Order Type:</label>
-                <select id="order_type" name="order_type" onchange="updateOrderType()">
+                <select id="order_type" name="order_type">
                     <option value="0" {% if request.form.get('order_type', '0') == '0' %}selected{% endif %}>Buy</option>
                     <option value="1" {% if request.form.get('order_type', '0') == '1' %}selected{% endif %}>Sell</option>
                 </select>
@@ -97,7 +112,7 @@
 
             <!-- MIN Price Input -->
             <div class="form-group">
-                <label id="min_price_label">Expected MIN as % from current or MIN price: Buy=Last order to execute / Sell=First order</label>
+                <label id="min_price_label">Minimum Price will be the last BUY order executed</label>
                 <div class="inline-input">
                     <input type="number" id="min_price" name="min_price" value="{{ request.form.get('min_price', '') }}" required>
                     <label class="slider-label">Percent</label>
@@ -111,7 +126,7 @@
 
             <!-- MAX Price Input -->
             <div class="form-group">
-                <label id="max_price_label">Expected MAX as % from current or MAX price: Buy=First order to execute / Sell=Last order</label>
+                <label id="max_price_label">Maximum Price will be the first BUY order executed</label>
                 <div class="inline-input">
                     <input type="number" id="max_price" name="max_price" value="{{ request.form.get('max_price', '') }}" required>
                     <label class="slider-label">Percent</label>
@@ -187,18 +202,81 @@
             const cancelLabel = document.getElementById('cancel_orders_label');
 
             if (orderType == 0) { // Buy
-                minPriceLabel.textContent = "Expected MIN as % from current or MIN price: Buy=Last order to execute";
-                maxPriceLabel.textContent = "Expected MAX as % from current or MAX price: Buy=First order to execute";
+                minPriceLabel.textContent = "Minimum Price will be the last BUY order executed";
+                maxPriceLabel.textContent = "Maximum Price will be the first BUY order executed";
                 cancelLabel.textContent = "Cancel existing BUY orders";
             } else { // Sell
-                minPriceLabel.textContent = "Expected MIN as % from current or MIN price: Sell=First order to execute";
-                maxPriceLabel.textContent = "Expected MAX as % from current or MAX price: Sell=Last order to execute";
+                minPriceLabel.textContent = "Minimum Price will be the first SELL order executed";
+                maxPriceLabel.textContent = "Maximum Price will be the last SELL order executed";
                 cancelLabel.textContent = "Cancel existing SELL orders";
+            }
+        }
+
+        // Function to update the max attribute of input fields based on slider position
+        function updateInputConstraints() {
+            const minType = document.getElementById('min_type').checked;
+            const maxType = document.getElementById('max_type').checked;
+            const minPriceInput = document.getElementById('min_price');
+            const maxPriceInput = document.getElementById('max_price');
+
+            // Update max attribute for min_price
+            if (minType) {
+                minPriceInput.removeAttribute('max'); // No max constraint in Amount mode
+            } else {
+                minPriceInput.setAttribute('max', 90); // Max constraint of 90 in Percent mode
+            }
+
+            // Update max attribute for max_price
+            if (maxType) {
+                maxPriceInput.removeAttribute('max'); // No max constraint in Amount mode
+            } else {
+                maxPriceInput.setAttribute('max', 90); // Max constraint of 90 in Percent mode
+            }
+        }
+
+        // Function to constrain input values when in Percent mode
+        function constrainInputValues() {
+            const minType = document.getElementById('min_type').checked;
+            const maxType = document.getElementById('max_type').checked;
+            const minPriceInput = document.getElementById('min_price');
+            const maxPriceInput = document.getElementById('max_price');
+
+            if (!minType) { // Percent mode for min_price
+                if (parseFloat(minPriceInput.value) > 90) {
+                    minPriceInput.value = 90;
+                }
+            }
+
+            if (!maxType) { // Percent mode for max_price
+                if (parseFloat(maxPriceInput.value) > 90) {
+                    maxPriceInput.value = 90;
+                }
             }
         }
 
         // Initialize the UI based on the current order type
         updateOrderType();
+
+        // Add event listeners to constrain input values
+        document.getElementById('min_price').addEventListener('input', constrainInputValues);
+        document.getElementById('max_price').addEventListener('input', constrainInputValues);
+
+        // Add event listeners to update input constraints when sliders are toggled
+        document.getElementById('min_type').addEventListener('change', function() {
+            updateInputConstraints();
+            constrainInputValues();
+        });
+
+        document.getElementById('max_type').addEventListener('change', function() {
+            updateInputConstraints();
+            constrainInputValues();
+        });
+
+        // Add an event listener to the order_type dropdown
+        document.getElementById('order_type').addEventListener('change', updateOrderType);
+
+        // Initialize input constraints on page load
+        updateInputConstraints();
 
         // Function to fetch the price and update the selected coin
         function fetchPrice(coin) {

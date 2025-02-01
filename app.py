@@ -1,5 +1,4 @@
 # Binance Testnet has no UI so just intercting through the app
-
 from flask import Flask, render_template, request, jsonify
 import ccxt
 import time  # Add this import
@@ -8,12 +7,7 @@ import logging
 app = Flask(__name__)
 
 exchange = ccxt.binance({
-   'apiKey': "rX3UAlS57MlSLoU0fTjXHKRaHBexMwcOAnJjByS9uyjqxAQE2AUuoBjEqGXBgYuC",
-   'secret': "VZMFnIBsIUCLND4ejqqu1dVhHQ2MDJSHNiEukBH6wXClSrsod31YKc2DwsgYro8Q",
-   'options': {
-        'defaultType': 'spot',  # Ensure you're using the spot market
-    },
-    'enableRateLimit': True,  # Enable rate limiting to avoid API bans
+
 })
 
 # Set the testnet endpoint
@@ -63,8 +57,11 @@ def submit():
         # Retrieve input values from the form
         current_price = float(request.form.get('price', 0))
         order_type = int(request.form.get('order_type'))
-        min_type = int(request.form.get('min_type', 0))
-        max_type = int(request.form.get('max_type', 0))
+        
+        # Handle checkbox values correctly
+        min_type = 1 if request.form.get('min_type') == 'on' else 0
+        max_type = 1 if request.form.get('max_type') == 'on' else 0
+        
         investment = float(request.form.get('investment', 0))
         min_price = float(request.form.get('min_price', 0))
         max_price = float(request.form.get('max_price', 0))
@@ -103,8 +100,8 @@ def submit():
             total_quantity = 0
 
             for i in range(num_orders):
-                order_price = round((min_price + (i * order_width)), 1)
-                order_amount = round(normalized_weights[i] * investment, 1)
+                order_price = round((min_price + (i * order_width)), 2)
+                order_amount = round(normalized_weights[i] * investment, 2)
                 order_quantity = round(order_amount / order_price, 6)
 
                 total_investment += order_amount
