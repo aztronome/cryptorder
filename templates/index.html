@@ -6,88 +6,45 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>Crypto Trading App</title>
     <style>
-        /* Style for the switch */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 34px;
+        /* Center the form groups horizontally */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
         }
 
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: 0.4s;
-            border-radius: 34px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: 0.4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: #2196F3;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(26px);
-        }
-
-        .slider-label {
-            margin-left: 10px;
-            font-size: 14px;
-        }
-
-        /* Style for inline input and switch */
-        .inline-input {
+        /* Style for the input fields and labels */
+        .input-row {
             display: flex;
             align-items: center;
             gap: 10px;
-            justify-content: center; /* Center the items horizontally */
         }
 
-        /* Shrink the input fields */
-        .inline-input input[type="number"] {
-            width: 80px; /* Adjust the width as needed */
-            text-align: center; /* Center the text inside the input */
+        .input-row input[type="number"] {
+            text-align: right;
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
-            .inline-input {
-                flex-direction: column; /* Stack items vertically on small screens */
-                align-items: flex-start; /* Align items to the left */
-            }
+        /* Narrow width for percentage fields */
+        .input-row input.percent {
+            width: 50px; /* Narrow width for percentages */
+        }
 
-            .inline-input input[type="number"] {
-                width: 100%; /* Full width on small screens */
-            }
+        /* Wider width for amount fields */
+        .input-row input.amount {
+            width: 100px; /* Wider width for amounts */
+        }
+
+        /* Labels for percent and amount */
+        .input-row .label {
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>CRYPTORDER</h1>
-        <p>Generates buy or sell limit orders that either expedite entry or reduce average cost. Tap Get BTC to grab the current price of Bitcoin. <a href="/help">HELP!!</a></p>
+        <p>Generates buy or sell limit orders that either expedite entry or reduce average cost. Tap Get <span id="selected-coin">BTC</span> to grab the current price. <a href="/help">HELP!!</a></p>
 
         <div class="button-row">
             <button class="get-button" onclick="fetchPrice('BTC')">Get BTC</button>
@@ -98,43 +55,37 @@
         
         <form method="POST" action="/submit">
             <div class="form-group">
-                <label for="price">Tap a coin to GET it's current price or enter a custom price</label>
+                <label for="price">Tap a coin to GET its current price or enter a custom price</label>
                 <input type="text" id="price" name="price" value="{{ request.form.get('price', '') }}">
             </div>
 
             <div class="form-group">
                 <label for="order_type">Order Type:</label>
-                <select id="order_type" name="order_type">
-                    <option value="0" {% if request.form.get('order_type', '0') == '0' %}selected{% endif %}>Buy</option>
-                    <option value="1" {% if request.form.get('order_type', '0') == '1' %}selected{% endif %}>Sell</option>
+                <select id="order_type" name="order_type" onchange="updateOrderType()">
+                    <option value="buy" {% if request.form.get('order_type', 'buy') == 'buy' %}selected{% endif %}>Buy</option>
+                    <option value="sell" {% if request.form.get('order_type', 'buy') == 'sell' %}selected{% endif %}>Sell</option>
                 </select>
             </div>
 
             <!-- MIN Price Input -->
             <div class="form-group">
-                <label id="min_price_label">Minimum Price will be the last BUY order executed</label>
-                <div class="inline-input">
-                    <input type="number" id="min_price" name="min_price" value="{{ request.form.get('min_price', '') }}" required>
-                    <label class="slider-label">Percent</label>
-                    <label class="switch">
-                        <input type="checkbox" id="min_type" name="min_type" {% if request.form.get('min_type', '0') == '1' %}checked{% endif %}>
-                        <span class="slider"></span>
-                    </label>
-                    <label class="slider-label">Amount</label>
+                <label id="min_price_label">Expected MIN as % from current or MIN price: Buy=Last order to execute / Sell=First order</label>
+                <div class="input-row">
+                    <span class="label">Percent</span>
+                    <input type="number" id="min_price_percent" name="min_price_percent" class="percent" step="0.1" placeholder="%" oninput="updateMinPriceAmount()">
+                    <input type="number" id="min_price_amount" name="min_price_amount" class="amount" step="0.01" placeholder="Amount" oninput="updateMinPricePercent()">
+                    <span class="label">Amount</span>
                 </div>
             </div>
 
             <!-- MAX Price Input -->
             <div class="form-group">
-                <label id="max_price_label">Maximum Price will be the first BUY order executed</label>
-                <div class="inline-input">
-                    <input type="number" id="max_price" name="max_price" value="{{ request.form.get('max_price', '') }}" required>
-                    <label class="slider-label">Percent</label>
-                    <label class="switch">
-                        <input type="checkbox" id="max_type" name="max_type" {% if request.form.get('max_type', '0') == '1' %}checked{% endif %}>
-                        <span class="slider"></span>
-                    </label>
-                    <label class="slider-label">Amount</label>
+                <label id="max_price_label">Expected MAX as % from current or MAX price: Buy=First order to execute / Sell=Last order</label>
+                <div class="input-row">
+                    <span class="label">Percent</span>
+                    <input type="number" id="max_price_percent" name="max_price_percent" class="percent" step="0.1" placeholder="%" oninput="updateMaxPriceAmount()">
+                    <input type="number" id="max_price_amount" name="max_price_amount" class="amount" step="0.01" placeholder="Amount" oninput="updateMaxPricePercent()">
+                    <span class="label">Amount</span>
                 </div>
             </div>
             
@@ -150,7 +101,7 @@
             
             <div class="form-group">
                 <!-- N = 1 result in division by zero, allow 2 thru 20 -->
-                <label for="num_orders">Number of Orders: More is better, try atleast 6</label>
+                <label for="num_orders">Number of Orders: More is better, try at least 6</label>
                 <input type="number" id="num_orders" name="num_orders" min="2" max="20" value="{{ request.form.get('num_orders', '') }}" required>
             </div>
             
@@ -164,9 +115,9 @@
         <h2>Generated Orders</h2>
         <table>
             <tr>
-                <th>Price (USD)</th>
-                <th>Amount (USD)</th>
-                <th>BTC Quantity</th>
+                <th>Price (USDC)</th>
+                <th>Amount (USDC)</th>
+                <th><span id="selected-coin-table">{{ request.form.get('coin', 'BTC') }}</span> Quantity</th>
             </tr>
             {% for order in orders %}
             <tr>
@@ -178,15 +129,15 @@
         </table>
         
         <div class="average-cost">
-            <p>Average BTC Price: {{ avg_cost }}</p>  
-            <p>Total BTC Traded: {{ total_btc }}</p>
+            <p>Average <span id="selected-coin-avg">{{ request.form.get('coin', 'BTC') }}</span> Price: {{ avg_cost }}</p>  
+            <p>Total <span id="selected-coin-total">{{ request.form.get('coin', 'BTC') }}</span> Traded: {{ total_btc }}</p>
         </div>
 
         <!-- Add the "Place Order" button and cancel checkbox -->
         <div>
             <label>
                 <input type="checkbox" id="cancel_orders_checkbox">
-                <span id="cancel_orders_label">Cancel existing {{ 'BUY' if request.form.get('order_type', '0') == '0' else 'SELL' }} orders</span>
+                <span id="cancel_orders_label">Cancel existing {{ request.form.get('order_type', 'buy') | upper }} orders</span>
             </label>
             <button onclick="placeOrder()">Place Order</button>
         </div>
@@ -201,87 +152,28 @@
             const maxPriceLabel = document.getElementById('max_price_label');
             const cancelLabel = document.getElementById('cancel_orders_label');
 
-            if (orderType == 0) { // Buy
-                minPriceLabel.textContent = "Minimum Price will be the last BUY order executed";
-                maxPriceLabel.textContent = "Maximum Price will be the first BUY order executed";
+            if (orderType === 'buy') {
+                minPriceLabel.textContent = "Expected MIN as % from current or MIN price: Buy=Last order to execute";
+                maxPriceLabel.textContent = "Expected MAX as % from current or MAX price: Buy=First order to execute";
                 cancelLabel.textContent = "Cancel existing BUY orders";
             } else { // Sell
-                minPriceLabel.textContent = "Minimum Price will be the first SELL order executed";
-                maxPriceLabel.textContent = "Maximum Price will be the last SELL order executed";
+                minPriceLabel.textContent = "Expected MIN as % from current or MIN price: Sell=First order to execute";
+                maxPriceLabel.textContent = "Expected MAX as % from current or MAX price: Sell=Last order to execute";
                 cancelLabel.textContent = "Cancel existing SELL orders";
-            }
-        }
-
-        // Function to update the max attribute of input fields based on slider position
-        function updateInputConstraints() {
-            const minType = document.getElementById('min_type').checked;
-            const maxType = document.getElementById('max_type').checked;
-            const minPriceInput = document.getElementById('min_price');
-            const maxPriceInput = document.getElementById('max_price');
-
-            // Update max attribute for min_price
-            if (minType) {
-                minPriceInput.removeAttribute('max'); // No max constraint in Amount mode
-            } else {
-                minPriceInput.setAttribute('max', 90); // Max constraint of 90 in Percent mode
-            }
-
-            // Update max attribute for max_price
-            if (maxType) {
-                maxPriceInput.removeAttribute('max'); // No max constraint in Amount mode
-            } else {
-                maxPriceInput.setAttribute('max', 90); // Max constraint of 90 in Percent mode
-            }
-        }
-
-        // Function to constrain input values when in Percent mode
-        function constrainInputValues() {
-            const minType = document.getElementById('min_type').checked;
-            const maxType = document.getElementById('max_type').checked;
-            const minPriceInput = document.getElementById('min_price');
-            const maxPriceInput = document.getElementById('max_price');
-
-            if (!minType) { // Percent mode for min_price
-                if (parseFloat(minPriceInput.value) > 90) {
-                    minPriceInput.value = 90;
-                }
-            }
-
-            if (!maxType) { // Percent mode for max_price
-                if (parseFloat(maxPriceInput.value) > 90) {
-                    maxPriceInput.value = 90;
-                }
             }
         }
 
         // Initialize the UI based on the current order type
         updateOrderType();
 
-        // Add event listeners to constrain input values
-        document.getElementById('min_price').addEventListener('input', constrainInputValues);
-        document.getElementById('max_price').addEventListener('input', constrainInputValues);
-
-        // Add event listeners to update input constraints when sliders are toggled
-        document.getElementById('min_type').addEventListener('change', function() {
-            updateInputConstraints();
-            constrainInputValues();
-        });
-
-        document.getElementById('max_type').addEventListener('change', function() {
-            updateInputConstraints();
-            constrainInputValues();
-        });
-
-        // Add an event listener to the order_type dropdown
-        document.getElementById('order_type').addEventListener('change', updateOrderType);
-
-        // Initialize input constraints on page load
-        updateInputConstraints();
-
         // Function to fetch the price and update the selected coin
         function fetchPrice(coin) {
             // Update the hidden input field with the selected coin
             document.getElementById('coin').value = coin;
+            // Update the selected coin in the UI
+            document.querySelectorAll('#selected-coin, #selected-coin-table, #selected-coin-avg, #selected-coin-total').forEach(el => {
+                el.textContent = coin;
+            });
 
             fetch(`/get_price/${coin}`)
                 .then(response => {
@@ -300,30 +192,87 @@
                 });
         }
 
+        // Function to update the dollar amount based on the percentage input for MIN price
+        function updateMinPriceAmount() {
+            const percent = parseFloat(document.getElementById('min_price_percent').value);
+            const price = parseFloat(document.getElementById('price').value);
+            const orderType = document.getElementById('order_type').value;
+
+            if (!isNaN(percent) && !isNaN(price)) {
+                let amount;
+                if (orderType === 'buy') {
+                    amount = price * (1 - percent / 100); // Below current price for buy
+                } else {
+                    amount = price * (1 + percent / 100); // Above current price for sell
+                }
+                document.getElementById('min_price_amount').value = amount.toFixed(2);
+            }
+        }
+
+        // Function to update the percentage based on the dollar amount input for MIN price
+        function updateMinPricePercent() {
+            const amount = parseFloat(document.getElementById('min_price_amount').value);
+            const price = parseFloat(document.getElementById('price').value);
+            const orderType = document.getElementById('order_type').value;
+
+            if (!isNaN(amount) && !isNaN(price) && price !== 0) {
+                let percent;
+                if (orderType === 'buy') {
+                    percent = ((price - amount) / price) * 100; // Below current price for buy
+                } else {
+                    percent = ((amount - price) / price) * 100; // Above current price for sell
+                }
+                document.getElementById('min_price_percent').value = percent.toFixed(1);
+            }
+        }
+
+        // Function to update the dollar amount based on the percentage input for MAX price
+        function updateMaxPriceAmount() {
+            const percent = parseFloat(document.getElementById('max_price_percent').value);
+            const price = parseFloat(document.getElementById('price').value);
+            const orderType = document.getElementById('order_type').value;
+
+            if (!isNaN(percent) && !isNaN(price)) {
+                let amount;
+                if (orderType === 'buy') {
+                    amount = price * (1 - percent / 100); // Below current price for buy
+                } else {
+                    amount = price * (1 + percent / 100); // Above current price for sell
+                }
+                document.getElementById('max_price_amount').value = amount.toFixed(2);
+            }
+        }
+
+        // Function to update the percentage based on the dollar amount input for MAX price
+        function updateMaxPricePercent() {
+            const amount = parseFloat(document.getElementById('max_price_amount').value);
+            const price = parseFloat(document.getElementById('price').value);
+            const orderType = document.getElementById('order_type').value;
+
+            if (!isNaN(amount) && !isNaN(price) && price !== 0) {
+                let percent;
+                if (orderType === 'buy') {
+                    percent = ((price - amount) / price) * 100; // Below current price for buy
+                } else {
+                    percent = ((amount - price) / price) * 100; // Above current price for sell
+                }
+                document.getElementById('max_price_percent').value = percent.toFixed(1);
+            }
+        }
+
         // Function to place orders
         function placeOrder() {
-            console.log("Place Order button clicked"); // Debugging
-
-            // Use template variables safely
             const orders = JSON.parse('{{ orders | tojson | safe }}');
             const orderType = document.getElementById('order_type').value;
-            const coin = document.getElementById('coin').value; // Get the selected coin from the hidden input
-            const cancelOrders = document.getElementById('cancel_orders_checkbox').checked; // Check if cancel checkbox is checked
+            const coin = document.getElementById('coin').value;
+            const cancelOrders = document.getElementById('cancel_orders_checkbox').checked;
 
-            console.log("Orders:", orders); // Debugging
-            console.log("Order Type:", orderType); // Debugging
-            console.log("Coin:", coin); // Debugging
-            console.log("Cancel Orders:", cancelOrders); // Debugging
-
-            // Check if there are no orders
             if (orders.length === 0) {
                 alert('No orders to place. Please generate orders first.');
                 return;
             }
 
-            // Cancel existing orders if checkbox is checked
             if (cancelOrders) {
-                console.log("Canceling existing orders..."); // Debugging
                 fetch('/cancel_orders', {
                     method: 'POST',
                     headers: {
@@ -331,26 +280,19 @@
                     },
                     body: JSON.stringify({ coin: coin, order_type: orderType }),
                 })
-                .then(response => {
-                    console.log("Cancel Orders Response:", response); // Debugging
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
-                    console.log("Cancel Orders Data:", data); // Debugging
                     if (data.success) {
-                        alert(data.message); // Notify user that orders were canceled
+                        alert(data.message);
                     } else {
                         throw new Error(data.error || "Failed to cancel orders");
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error); // Debugging
                     alert('Error: ' + error.message);
                 });
             }
 
-            // Place new orders
-            console.log("Placing new orders..."); // Debugging
             fetch('/place_order', {
                 method: 'POST',
                 headers: {
@@ -358,12 +300,8 @@
                 },
                 body: JSON.stringify({ orders: orders, order_type: orderType, coin: coin }),
             })
-            .then(response => {
-                console.log("Place Order Response:", response); // Debugging
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
-                console.log("Place Order Data:", data); // Debugging
                 if (data.success) {
                     alert('Orders placed successfully!');
                 } else {
@@ -371,7 +309,6 @@
                 }
             })
             .catch(error => {
-                console.error('Error:', error); // Debugging
                 alert('Error: ' + error.message);
             });
         }
