@@ -8,3 +8,6 @@ __pycache__/
 
 # Ignore system files
 .DS_Store
+
+# .gitignore
+config.py

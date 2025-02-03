@@ -44,15 +44,34 @@ def help():
 def submit():
     try:
         # Retrieve input values from the form
-        current_price = float(request.form.get('price', 0))
+        price = request.form.get('price', '')
         order_type = request.form.get('order_type', 'buy')  # Get order_type as string
-        min_price_amount = float(request.form.get('min_price_amount', 0))
-        max_price_amount = float(request.form.get('max_price_amount', 0))
-        investment = float(request.form.get('investment', 0))
-        scaling_factor = float(request.form.get('scaling_factor', 0))
-        num_orders = int(request.form.get('num_orders', 1))
+        min_price_percent = request.form.get('min_price_percent', '')
+        min_price_amount = request.form.get('min_price_amount', '')
+        max_price_percent = request.form.get('max_price_percent', '')
+        max_price_amount = request.form.get('max_price_amount', '')
+        investment = request.form.get('investment', '')
+        scaling_factor = request.form.get('scaling_factor', '')
+        num_orders = request.form.get('num_orders', '')
         coin = request.form.get('coin', 'BTC')  # Get the coin symbol from the form
-        scale_adjuster = 3.5
+
+        # Validate that all required fields are provided and not empty
+        if not all([price, min_price_percent, min_price_amount, max_price_percent, max_price_amount, investment, scaling_factor, num_orders]):
+            return jsonify({"error": "All fields are required"}), 400
+
+        # Convert fields to appropriate types
+        current_price = float(price)
+        min_price_percent = float(min_price_percent)
+        min_price_amount = float(min_price_amount)
+        max_price_percent = float(max_price_percent)
+        max_price_amount = float(max_price_amount)
+        investment = float(investment)
+        scaling_factor = float(scaling_factor)
+        num_orders = int(num_orders)
+
+        # Ensure num_orders is at least 2
+        if num_orders < 2:
+            return jsonify({"error": "Number of orders must be at least 2"}), 400
 
         # Determine the symbol (e.g., BTC-USDC)
         symbol = f"{coin}-USDC"
@@ -63,7 +82,7 @@ def submit():
 
         # Create a normalized weight distribution based on the scaling factor
         weights = [
-            (1 + scaling_factor * (num_orders - i - 1) / ((num_orders - 1) * scale_adjuster))
+            (1 + scaling_factor * (num_orders - i - 1) / ((num_orders - 1) * 3.5))
             for i in range(num_orders)
         ]
         if order_type == 'sell':  # Reverse weights for sell orders
@@ -101,12 +120,23 @@ def submit():
             avg_cost=round(avg_cost, 2),
             total_btc=round(total_quantity, 7),
             order_type=order_type,
-            coin=coin
+            coin=coin,
+            price=price,
+            min_price_percent=min_price_percent,
+            min_price_amount=min_price_amount,
+            max_price_percent=max_price_percent,
+            max_price_amount=max_price_amount,
+            investment=investment,
+            scaling_factor=scaling_factor,
+            num_orders=num_orders
         )
 
+    except ValueError as e:
+        logging.error(f"Error converting form data to float or int: {e}")
+        return jsonify({"error": "Invalid input. Please ensure all fields contain valid numbers."}), 400
     except Exception as e:
         logging.error(f"Error in /submit: {e}")
-        return jsonify({'error': str(e)}), 400
+        return jsonify({"error": str(e)}), 400
 
 @app.route('/cancel_orders', methods=['POST'])
 def cancel_orders():

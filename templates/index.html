@@ -39,6 +39,20 @@
         .input-row .label {
             font-size: 14px;
         }
+
+        /* Style for GET buttons */
+        .button-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .get-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -46,17 +60,19 @@
         <h1>CRYPTORDER</h1>
         <p>Generates buy or sell limit orders that either expedite entry or reduce average cost. Tap Get <span id="selected-coin">BTC</span> to grab the current price. <a href="/help">HELP!!</a></p>
 
+        <!-- GET Buttons -->
         <div class="button-row">
             <button class="get-button" onclick="fetchPrice('BTC')">Get BTC</button>
             <button class="get-button" onclick="fetchPrice('ETH')">Get ETH</button>
             <button class="get-button" onclick="fetchPrice('SOL')">Get SOL</button>
+            <button class="get-button" onclick="fetchPrice('XRP')">Get XRP</button>
             <button class="get-button" onclick="fetchPrice('SUI')">Get SUI</button>
         </div>
         
         <form method="POST" action="/submit">
             <div class="form-group">
                 <label for="price">Tap a coin to GET its current price or enter a custom price</label>
-                <input type="text" id="price" name="price" value="{{ request.form.get('price', '') }}">
+                <input type="text" id="price" name="price" value="{{ request.form.get('price', '') }}" required>
             </div>
 
             <div class="form-group">
@@ -72,8 +88,8 @@
                 <label id="min_price_label">Expected MIN as % from current or MIN price: Buy=Last order to execute / Sell=First order</label>
                 <div class="input-row">
                     <span class="label">Percent</span>
-                    <input type="number" id="min_price_percent" name="min_price_percent" class="percent" step="0.1" placeholder="%" oninput="updateMinPriceAmount()">
-                    <input type="number" id="min_price_amount" name="min_price_amount" class="amount" step="0.01" placeholder="Amount" oninput="updateMinPricePercent()">
+                    <input type="number" id="min_price_percent" name="min_price_percent" class="percent" step="0.1" placeholder="%" value="{{ request.form.get('min_price_percent', '') }}" oninput="updateMinPriceAmount()">
+                    <input type="number" id="min_price_amount" name="min_price_amount" class="amount" step="0.01" placeholder="Amount" value="{{ request.form.get('min_price_amount', '') }}" oninput="updateMinPricePercent()">
                     <span class="label">Amount</span>
                 </div>
             </div>
@@ -83,8 +99,8 @@
                 <label id="max_price_label">Expected MAX as % from current or MAX price: Buy=First order to execute / Sell=Last order</label>
                 <div class="input-row">
                     <span class="label">Percent</span>
-                    <input type="number" id="max_price_percent" name="max_price_percent" class="percent" step="0.1" placeholder="%" oninput="updateMaxPriceAmount()">
-                    <input type="number" id="max_price_amount" name="max_price_amount" class="amount" step="0.01" placeholder="Amount" oninput="updateMaxPricePercent()">
+                    <input type="number" id="max_price_percent" name="max_price_percent" class="percent" step="0.1" placeholder="%" value="{{ request.form.get('max_price_percent', '') }}" oninput="updateMaxPriceAmount()">
+                    <input type="number" id="max_price_amount" name="max_price_amount" class="amount" step="0.01" placeholder="Amount" value="{{ request.form.get('max_price_amount', '') }}" oninput="updateMaxPricePercent()">
                     <span class="label">Amount</span>
                 </div>
             </div>
@@ -108,7 +124,7 @@
             <!-- Hidden input to store the selected coin -->
             <input type="hidden" id="coin" name="coin" value="{{ request.form.get('coin', 'BTC') }}">
             
-            <button id="submit_button" onclick="submitForm()">Submit</button>
+            <button id="submit_button" type="submit">Submit</button>
         </form>
 
         {% if orders %}
